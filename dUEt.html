@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <title>dUEt</title>
+    <h3>Controls: A - Left && D - Right<br>P - Pause/Resume</br>R - Reset during game play</h3> 
+    <style>
+    body{
+        background-image: url("knight.jpg");
+        background-position:center;
+        background-size:fill;
+        background-repeat:no-repeat;
+        position:center;
+        
+    }
+    div{
+        text-align:center;
+    }
+    
+    h3{
+        color: rgb(4, 112, 126);
+    }
+    header,footer{
+        color: rgb(4, 112, 126);
+        text-align:center;
+    }
+    </style>
+    <header>DueT - The Spoof Game</header>
+    <div><canvas id="game" width="400" height="600"></canvas>
+    </div>
+    <footer>Please use Desktop for effective gameplay..</footer>
+</head>
+<body>
+    <script>
+        //canvas variables
+        var c;
+        var Context;
+        var image=new Image();
+        image.src='dig1.jpg';
+        var img=new Image();
+        img.src='ouch.jpg';
+        var img1=new Image();
+        img1.src='reset2.jpg';
+        
+        //reference circle
+        var cx=200;
+        var cy=465;
+        var r=70;
+        
+        //playballs
+        var bx=270;
+        var bd=130;
+        var by=465; 
+        var bs=465;   
+
+        //block speed
+        var sp=5;
+
+        //speed a.k.a angle
+        var angle=0.12;
+        
+        //buttons
+        var s=false;
+        var set=false;
+        var restart=-1;
+        var board=[];
+
+        //blocks array
+        var x=[65,235,250,90,160];
+        var y=[-540,0,-180,-360,-720];
+        var l=[100,100,60,60,80];
+        var h=[30,30,60,60,30];
+
+        //score
+        var score=0;
+        
+        //winCondition
+        var win=false; 
+
+
+        function reset(){
+        
+            y=[-540,4,-180,-360,-720];
+            x=[65,235,250,90,160];
+            sp=5;
+            Context.font='15px';
+            score=0;
+            bx=270;
+            bd=130;
+            by=465; 
+            bs=465;
+            delta= 0;
+            alpha= Math.PI;   
+            
+        }
+
+        function mousePos(evt){
+            var rect= c.getBoundingClientRect();
+            var root= document.documentElement;
+            var mouseX= evt.clientX - rect.left - root.scrollLeft;
+            var mouseY= evt.clientY - rect.top - root.scrollTop;
+            return{
+                x:mouseX,
+                y:mouseY
+            };
+        }
+        function mouseClick(evt){
+            if(win){
+                win=false;
+                board.push(Math.ceil(score));
+                console.log(board);
+                score=0;
+                reset();
+                return;
+            }
+            if(set){
+                set=false;
+                board=[];
+                score=0;
+                restart=-1;
+                start();
+                return;
+            }
+            var pos=mousePos(evt);
+            if(pos.x>c.width/2)
+                circulate();
+            else 
+                anticlock();
+            
+        }
+
+        function start(){
+            if(restart<0)reset();
+            if(set==false){
+                var f=0;
+                if(board.length>10)
+                    board.splice(0,board.length-10);
+                for(var i=0;i<board.length;i++){
+                Context.font='18px algeria';
+                Context.fillStyle='Green';
+                Context.fillText("Trial - "+(i+1)+" = "+board[i],50,i*20+200);
+                }  
+            }
+
+            if(set) {board=[];set=false;win=true;}
+            
+            Context.font='18px algeria';
+            Context.fillStyle='orange';
+            Context.fillText("Hit space to make the blocks move..",70,150);
+            
+            {Context.font='50px georgia';
+            Context.fillStyle='red';
+            Context.fillText("DueT",140,480);}
+            
+        }
+
+        var fps=40;
+        window.onload=function(){ console.log("Window Loaded..!!");
+            c=document.getElementById('game');
+            Context=c.getContext('2d');
+            Context.font='18px algeria';
+
+        setInterval(function(){draw();moveBlock();},1000/fps);
+
+        
+        window.addEventListener('keypress',function(key){
+            if(key.keyCode==65||key.keyCode==97||key.keyCode==37)//a
+                anticlock();
+            if(key.keyCode==68||key.keyCode==100||key.keyCode==39)//d
+                circulate();
+            if(key.keyCode==82||key.keyCode==114)//r
+            {set=true;reset();}
+                //{set=true;board=[];reset();start();}
+            if(key.keyCode==80||key.keyCode==112)//p
+                s=!s;
+            if(key.keyCode==32)//space
+                {restart++;start();}
+            console.log(key.keyCode);
+                },false);
+            c.addEventListener('mousedown',mouseClick);
+        } 
+    
+        var delta= 0;
+        var alpha= Math.PI;
+    
+        function circulate(){
+            bx=cx+(Math.cos(delta))*r;
+            by=cy+(Math.sin(delta))*r;
+            bd=cx+(Math.cos(alpha))*r;
+            bs=cy+(Math.sin(alpha))*r;
+
+            delta+=angle;
+            alpha+=angle;                
+
+        }
+        
+        function anticlock(){
+            bx=cx+(Math.cos(delta))*r;
+            by=cy+(Math.sin(delta))*r;
+            bd=cx+(Math.cos(alpha))*r;
+            bs=cy+(Math.sin(alpha))*r;
+
+            delta-=angle;
+            alpha-=angle;                
+        
+        }
+
+        function dist(x,y){
+            var d;
+            d=x-y;
+            if(d<0) d=-d;
+            return d;
+        }
+        
+        function heightReset(){
+            var i,z;
+        
+            for(i=0;i<5;i++){
+                if(y[i]>c.height) {
+                    y[i]=-300;          
+                    x[i]=Math.floor((Math.random()*270)+26);
+                }   
+            }
+        }
+
+        function checkCollision(){
+            var i;
+            for(i=0;i<5;i++){
+                if(!((((dist(by,(y[i]+h[i]/2))<h[i]/2))&&(((bx<x[i]+l[i])&&(bx>x[i]))))||((dist(bs,(y[i]+h[i]/2))<h[i]/2)&&((bd<x[i]+l[i])&&(bd>x[i])))))
+                    y[i]=y[i]+Math.floor(sp);
+                else
+                    win=true;
+            }
+            sp+=0.003;
+            {
+            Context.font='18px algeria';
+            Context.fillStyle='yellow';
+            Context.fillText("LEVEL : " + Math.floor(sp-4),25,25);
+            }
+        }
+
+        function moveBlock(){ 
+
+        if(s||restart<0||set) return;
+        
+        if(win==true) return;
+            //checking the collission
+        checkCollision();
+            //reseting the blocks    
+        heightReset();
+            //shuffle the length and height
+        
+        }
+        
+        function circle(color,x,y,r)
+        {
+            Context.fillStyle = color;
+            Context.beginPath();
+            Context.arc(x,y,r,0,Math.PI*2,true);
+            Context.fill();
+        }
+    
+        function rect(color,x,y,l,b)
+        {
+            Context.fillStyle=color;
+            Context.fillRect(x,y,l,b);
+        }
+        
+        function scoreBlock(){
+            score+=0.1;
+            Context.font='15px';
+            Context.fillStyle='Yellow';
+            
+            if(Math.floor(score)==score){
+                Context.fillText("SCORE: " + score,290,25);
+            }
+            else 
+                Context.fillText("SCORE: " + Math.ceil(score),290,25);
+
+            if(win==true){
+                board.push(Math.ceil(score));
+                score=0;
+                console.log(board.length);
+                return;
+            }
+
+        }
+        
+        function draw(){
+        if(s) return;
+        
+        if(set){
+            Context.font='20px serif';
+            rect('black',4,4,c.width-8,c.height-8);
+            Context.drawImage(img1,4,150,c.width-8,300);
+            Context.fillStyle='yellow';
+            Context.fillText("Game is Reset...Click on",100,160);
+            Context.fillText("game window to continue",100,185);
+            return;
+        }
+
+        if(win==true){
+            Context.font='20px serif';
+            rect('black',4,4,c.width-8,c.height-8);
+            Context.drawImage(img,4,200,c.width-8,200);
+            Context.fillStyle='yellow';
+            Context.fillText("Click on the ",160,200);
+            Context.fillText("game window to continue",110,225);
+            Context.fillText("You are HIT..Try again",110,500);
+            restart=-1;
+            return;
+        }
+        
+        rect('green',0,0,c.width,c.height);
+        rect('black',4,4,c.width-8,c.height-8);
+        Context.drawImage(image,4,4,c.width-8,c.height-8);
+        circle('pink',cx ,cy,r);
+        circle('rgb(5, 5, 5)',cx ,cy,r-1);
+       
+        for(var i=0;i<5;i++){
+            rect('white',x[i],y[i],l[i],h[i]);
+        }
+                
+        circle('red',bd,bs,8);
+        circle('blue',bx,by,8);
+        if(restart>=0)
+            scoreBlock();   
+        else 
+            start();
+    }
+
+    </script>       
+</body>
+</html>
