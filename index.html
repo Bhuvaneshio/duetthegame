@@ -41,7 +41,15 @@
         img.src='ouch.jpg';
         var img1=new Image();
         img1.src='reset2.jpg';
-        
+        var rabbit=new Image();
+        rabbit.src='rabbit.png';
+        var snake=new Image();
+        snake.src='snake.png';
+      
+        //powerups
+        var count=0;
+        var inv=0;
+
         //reference circle
         var cx=200;
         var cy=465;
@@ -66,10 +74,10 @@
         var board=[];
 
         //blocks array
-        var x=[65,235,250,90,160];
-        var y=[-540,0,-180,-360,-720];
-        var l=[100,100,60,60,80];
-        var h=[30,30,60,60,30];
+        var x=[65,235,250,90,160,190,190];
+        var y=[-540,-30,-180,-360,-720,-900,-1800];
+        var l=[100,100,60,60,80,40,40];
+        var h=[30,30,60,60,30,40,40];
 
         //score
         var score=0;
@@ -80,8 +88,9 @@
 
         function reset(){
         
-            y=[-540,4,-180,-360,-720];
-            x=[65,235,250,90,160];
+            count=inv=0;
+            x=[65,235,250,90,160,180,180];
+            y=[-540,-30,-180,-360,-720,-900,-1800];
             sp=5;
             Context.font='15px';
             score=0;
@@ -135,10 +144,15 @@
                 var f=0;
                 if(board.length>10)
                     board.splice(0,board.length-10);
+                Context.fillStyle='orange';
+                Context.fillRect(46,170,150,215);
+                Context.drawImage(image,48,172,146,211,48,172,146,211);
+                Context.fillStyle='pink';
+                Context.fillText("Score Board",80,188);
                 for(var i=0;i<board.length;i++){
                 Context.font='18px algeria';
                 Context.fillStyle='Green';
-                Context.fillText("Trial - "+(i+1)+" = "+board[i],50,i*20+200);
+                Context.fillText("Trial - "+(i+1)+" = "+board[i],50,i*20+205);
                 }  
             }
 
@@ -146,13 +160,36 @@
             
             Context.font='18px algeria';
             Context.fillStyle='orange';
-            Context.fillText("Hit space to make the blocks move..",70,150);
+            Context.fillText("  Hit space to make the blocks move..",70,150);
             
             {Context.font='50px georgia';
             Context.fillStyle='blue';
             Context.fillText("Du",140,480);
             Context.fillStyle='red';
             Context.fillText("eT",206,480);}
+
+            Context.fillStyle='orange';
+            Context.fillRect(225,170,150,215);
+            Context.drawImage(image,227,172,146,211,227,172,146,211);
+            
+            Context.font='15px Arial';
+            {Context.fillStyle='PINK';
+            Context.fillText(" POWERUPS",253,188);
+            Context.fillStyle='orange';
+            Context.fillText("  1. Rabbit - Speed",229,205);
+            Context.fillStyle='pink';
+            Context.fillText(" This powerup helps",229,230);
+            Context.fillText(" you to increase the",229,245);
+            Context.fillText("   speed of control ",229,260);
+            Context.fillText("      small period",229,275);
+            Context.fillStyle='orange';
+            Context.fillText(" 2. Snake - Invincible",229,300);
+            Context.fillStyle='pink';
+            Context.fillText("  The power of god",229,315);
+            Context.fillText(" to become ultimate",229,330);
+            Context.fillText(" weapon of strength",229,345);
+            Context.fillText("No more COLLISION",229,360);
+            }
 
             
         }
@@ -220,21 +257,81 @@
         
             for(i=0;i<5;i++){
                 if(y[i]>c.height) {
-                    y[i]=-300;          
+                    y[i]=-480;          
                     x[i]=Math.floor((Math.random()*270)+26);
                 }   
             }
+            z=Math.floor((Math.random()*2)+3);
+            for(i=5;i<7;i++){
+                if(y[i]>c.height){
+                    y[i]=z*180;
+                    y[i]=-y[i]-90;
+                    x[i]=Math.floor((Math.random()*140)+131);
+                }
+
+            }
+        }
+
+        function invisible(){
+
+            y[6]+=Math.floor(sp);
+            if(inv>0 && inv<350){
+                
+                inv++;
+                if(count==0){
+                    Context.font='italic 15px Arial';
+                    Context.fillStyle='white';
+                    Context.fillText(" INVINCIBLE",155,470);
+                }
+            }
+            else{
+                inv=0;
+                return;
+            }
+        }
+
+       
+        function speed(){
+            
+            y[5]+=Math.floor(sp);
+            if(count>0 && count<350){
+                angle=0.2;
+                count++;
+                if(inv==0){
+                    Context.font='italic 15px Arial';
+                    Context.fillStyle='white';
+                    Context.fillText("SPEED",177,470);
+                }
+            }
+            else{
+                angle=0.12;
+                count=0;
+                return;
+            }
+            
         }
 
         function checkCollision(){
             var i;
-            for(i=0;i<5;i++){
-                if(!((((dist(by,(y[i]+h[i]/2))<h[i]/2))&&(((bx<x[i]+l[i])&&(bx>x[i]))))||((dist(bs,(y[i]+h[i]/2))<h[i]/2)&&((bd<x[i]+l[i])&&(bd>x[i])))))
+            if(inv>0 && inv<350){
+                for(i=0;i<5;i++)
                     y[i]=y[i]+Math.floor(sp);
-                else
-                    win=true;
+            
             }
+            else{
+                for(i=0;i<5;i++){
+                    if(!((((dist(by,(y[i]+h[i]/2))<h[i]/2))&&(((bx<x[i]+l[i])&&(bx>x[i]))))||((dist(bs,(y[i]+h[i]/2))<h[i]/2)&&((bd<x[i]+l[i])&&(bd>x[i])))))
+                        y[i]=y[i]+Math.floor(sp);
+                    else
+                        win=true;
+                }
+            }
+            if(((((dist(by,(y[5]+h[5]/2))<h[5]/2))&&(((bx<x[5]+l[5])&&(bx>x[5]))))||((dist(bs,(y[5]+h[5]/2))<h[5]/2)&&((bd<x[5]+l[5])&&(bd>x[5])))))
+                count=10;
+            if(((((dist(by,(y[6]+h[6]/2))<h[6]/2))&&(((bx<x[6]+l[6])&&(bx>x[6]))))||((dist(bs,(y[6]+h[6]/2))<h[6]/2)&&((bd<x[6]+l[6])&&(bd>x[6])))))
+                inv=10;
             sp+=0.003;
+            temp=sp;
             {
             Context.font='18px algeria';
             Context.fillStyle='yellow';
@@ -289,6 +386,17 @@
 
         }
         
+        function spriteit(){
+            if(count>0 && inv>0){
+                Context.fillStyle='white';
+                Context.fillText("SUPER POWER",140,470);
+            }
+            if(count==0)
+                Context.drawImage(rabbit,x[5],y[5],l[5],h[5]);
+            if(inv==0)
+                Context.drawImage(snake,x[6],y[6],l[6],h[6]);
+        }
+
         function draw(){
         if(s) return;
         
@@ -319,11 +427,19 @@
         Context.drawImage(image,4,4,c.width-8,c.height-8);
         circle('pink',cx ,cy,r);
         circle('rgb(5, 5, 5)',cx ,cy,r-1);
-       
+        
+        var pattern=Context.createPattern(image,'repeat');
+        circle(pattern,cx,cy,r-1);
+
         for(var i=0;i<5;i++){
             rect('white',x[i],y[i],l[i],h[i]);
         }
-                
+        
+        spriteit();
+        speed();
+        invisible();
+
+        console.log(inv);
         circle('red',bd,bs,8);
         circle('blue',bx,by,8);
         if(restart>=0)

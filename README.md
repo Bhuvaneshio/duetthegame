@@ -25,7 +25,18 @@ What's Inside the Game:
 	7. If u find the A & D controls too easy for you, you can switch to mouseclicks.
 	   The click on the left half of canvas  - anticlockwise()
 	   The click on the right half of canvas - clockwise()
-
+	8. There are powerups inside the game, for now
+	there are two types of powerups
+		The first powerup is SPEED, the rabbit stone
+		which signifies it.
+		The second powerup is INVINCIBLE, the snake 
+		stone signifies it by becoming invisible to
+		the blocks which are incoming.
+		But also there is a possiblity that you might
+		get all these two powerups simultaneously.
+		And that is SUPERPOWER
+	* Remember that the powerups you collect only last
+	for certain time.. So don't expect any alert *
 * Further changes to the game gets inserted here * 
 	
 Happy Coding..!!
